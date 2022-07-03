@@ -3,12 +3,12 @@ A very small small name/dict cache for python. Intended to be quick to set up an
 
 Uses sqlite and lzstring
 
-##Dependencies
+## Dependencies
 ```
 pip install lzstring==1.0.4
 ```
 
-##How to use
+## How to use
 Download the dcache.py file to your project folder and import
 ```
 from dcache import Dinky
@@ -20,7 +20,7 @@ Dinky().read(str)
 Dinky().write(str, dict)
 ```
 
-##Example
+## Example
 ```
 from dcache import Dinky
 
@@ -43,7 +43,7 @@ if (results := Dinky().read(id)) == False:
 
 ```
 
-##Performance
+## Performance
 
 This wont ever compete with Redis, MongoDB or anything like it. This is ment to be a small, easy solution for small scale use cases where you dont want or need any big dependencies. Hence performance will be less, but might still be orders of magnitude faster than parsing the data from some website every time.
 
@@ -66,7 +66,7 @@ Reads from DB2
 
 So the numbers are not amazing, but well within what you could expect from sqlite3.
 
-##Security
+## Security
 
 I dont know all that much about SQL injection, so to be on the safe side, all data is compressed to base64 string using lzstring. The id field accepts stings containing alphanumerical characters only. That way there should be no risk of injection attacks.
 
