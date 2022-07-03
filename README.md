@@ -1,7 +1,7 @@
 # dinkycache
 A very small small name/dict cache for python. Intended to be quick to set up and run in development or small scale apps.
 
-Uses sqlite and lzstring
+Uses `sqlite` for storage and `lzstring` for compression
 
 ## Dependencies
 ```python
@@ -41,7 +41,15 @@ if (results := Dinky().read(id)) == False:
     results = get_some_data(id)
     Dinky().write(id, results)
 ```
-Then `results` will contain the data from cache if its there and within the specified TTL. Or it will call your get_some_data() to try and fetch the data instead.
+Or if you dont like [walruses]([https://eff.org](https://peps.python.org/pep-0572/)):
+```python
+results = Dinky().read(id)
+if (results == False):
+    results = get_some_data(id)
+    Dinky().write(id, results)
+```
+
+In either case `results` will contain the data from cache if its there and within the specified TTL. Or it will call your get_some_data() to try and fetch the data instead.
 
 ## Performance
 
