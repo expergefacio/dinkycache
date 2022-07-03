@@ -41,7 +41,7 @@ if (results := Dinky().read(id)) == False:
     results = get_some_data(id)
     Dinky().write(id, results)
 ```
-Or if you dont like [walruses]([https://eff.org](https://peps.python.org/pep-0572/)):
+Or if you dont like [walruses](https://peps.python.org/pep-0572/):
 ```python
 results = Dinky().read(id)
 if (results == False):
