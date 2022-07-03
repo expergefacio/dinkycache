@@ -4,24 +4,24 @@ A very small small name/dict cache for python. Intended to be quick to set up an
 Uses sqlite and lzstring
 
 ## Dependencies
-```
+```python
 pip install lzstring==1.0.4
 ```
 
 ## How to use
 Download the dcache.py file to your project folder and import
-```
+```python
 from dcache import Dinky
 ```
 
 Has two methods called like so:
-```
+```python
 Dinky().read(str)
 Dinky().write(str, dict)
 ```
 
 ## Example
-```
+```python
 from dcache import Dinky
 
 #gets data from some slow source
@@ -30,18 +30,18 @@ def get_some_data(id):
 
 id = "001"
 
-
-#then where you would normaly write:
+```
+Then where you would normaly write:
+```python
 results = get_some_data(id)
-
-#write these 3 lines instead:
+```
+Write these 3 lines instead:
+```python
 if (results := Dinky().read(id)) == False:
     results = get_some_data(id)
     Dinky().write(id, results)
-
-#Then results will contain the data from cache if its there and within the specified TTL. Or it will call your get_some_data() to try and fetch the data instead.
-
 ```
+Then `results` will contain the data from cache if its there and within the specified TTL. Or it will call your get_some_data() to try and fetch the data instead.
 
 ## Performance
 
