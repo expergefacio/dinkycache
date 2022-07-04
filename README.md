@@ -89,6 +89,3 @@ That said, what you put in is what you'll get out. There is no checking for html
 Lzstring is not great for shorter strings, and does sometimes even increase to string lenght. However in testing we found that short strings (80 to 1500 chars) have an average compression rate of 98%, while strings longer than 60000 characters have an average compression rate of 48%. Testing was done with random as well as real world data.
 
 So there is most likely some performance loss, but it is outweighed by smaller database files and the fact that base 64 strings makes life very easy.
-
-## Written by
-[expergefacio](https://github.com/expergefacio/) and [Lanjelin](https://github.com/Lanjelin/)
