@@ -1,5 +1,6 @@
-# dinkycache
+# dinkycache for python projects
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 A very small name/value cache for python. 
 
 Intended for quick set up, in development and small scale projects.
