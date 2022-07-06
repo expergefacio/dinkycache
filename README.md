@@ -59,19 +59,20 @@ In either case `results` will contain the data from cache if its there and withi
 ## Settings
 
 Custom database filename and time to live can be passed to Dinky on initialization
+
+Defaults are `dinkycache.db` and `2160` hours (90 days) TLL
+
 ```python
 Dinky('preferred.db', 24)
 Dinky(dbfile='preferred.db').read(id)
 Dinky(ttl=24).read(id)
-```
-Or
-```python
+
+#OR
 settings = ['preferred.db', 24]
 Dinky(*settings).read(id)
 Dinky(*settings).write(id, results)
-```
-You can also of course do double starts and:
-```python
+
+#OR:
 settings = {
     'dbfile' = 'preferred.db',
     'ttl' = 24,
