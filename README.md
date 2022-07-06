@@ -17,7 +17,7 @@ pip install lzstring==1.0.4
 ## How to use
 Download the dcache.py file to your project folder and import
 ```python
-from dcache import Dinky
+from dinky import Dinky
 ```
 
 Has two methods called like so:
@@ -56,9 +56,35 @@ if results == False:
 
 In either case `results` will contain the data from cache if its there and within the specified TTL. Or it will call your get_some_data() to try and fetch the data instead.
 
+## Settings
+
+Custom database filename and time to live can be passed to Dinky on initialization
+```python
+Dinky('preferred.db', 24)
+Dinky(dbfile='preferred.db').read(id)
+Dinky(ttl=24).read(id)
+```
+Or
+```python
+settings = ['preferred.db', 24]
+Dinky(*settings).read(id)
+Dinky(*settings).write(id, results)
+```
+You can also of course do double starts and:
+```python
+settings = {
+    'dbfile' = 'preferred.db',
+    'ttl' = 24,
+}
+Dinky(**settings).read(id)
+Dinky(**settings).write(id, results)
+
+```
+
+
 ## Performance
 
-This wont ever compete with Redis, MongoDB or anything like it. This is ment to be a small, easy solution for small scale use cases where you dont want or need any big dependencies. Hence performance will be less, but might still be orders of magnitude faster than repeatedly parsing the data from some website.
+This wont ever compete with Redis, MongoDB or anything like that. This is ment to be a small, easy solution for small scale use cases where you dont want or need any big dependencies. Hence performance will be less, but might still be orders of magnitude faster than repeatedly parsing the data from some website.
 
 ### Tests:
 
