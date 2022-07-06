@@ -59,6 +59,7 @@ In either case `results` will contain the data from cache if its there and withi
 ## Settings
 
 Custom database filename and time to live can be passed to Dinky on initialization
+
 Defaults are `dinkycache.db` and `2160` hours (90 days) TLL
 
 ```python
