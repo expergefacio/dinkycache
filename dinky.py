@@ -75,7 +75,6 @@ class Dinky:
                     f"INSERT INTO dinkycache "
                     f"VALUES ('{hashed}', '{compressed}', '{self.expires}')"
                 )
-
         return result
 
 
@@ -102,7 +101,7 @@ class Dinky:
             with self._SQLite(self.dbfile) as cur:
                 cur.execute(
                     f"DELETE FROM dinkycache "
-                    f"WHERE timestamp != 0 AND timestamp < {self.now}"
+                    f"WHERE expiry != 0 AND expiry < {self.now}"
                 )
             with self._SQLite('.__dinky__') as cur:
                 cur.execute(
