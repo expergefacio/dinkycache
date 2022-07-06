@@ -20,14 +20,13 @@ class Dinky:
         self.garbage_timer = 24 #hours
         self.garbage_iterations = 100
 
-        self._expiry_garbage_collector()
-
         with self._SQLite(self.dbfile) as cur:
             cur.execute(
                 f"CREATE TABLE IF NOT EXISTS 'dinkycache' "
                 f"('id' text primary key, 'data' text, 'expiry' int)"
             )
 
+        self._expiry_garbage_collector()
 
 
     def read(self, id: str = False):
@@ -42,7 +41,7 @@ class Dinky:
             ).fetchone()
         if dbdata is not None:
             expiry = dbdata["expiry"]
-            if (expiry - self.now) < 0 or (expiry == 0):
+            if (expiry - self.now) > 0 or (expiry == 0):
                 result_str = self.lz.decompressFromBase64(dbdata["data"])
                 result = json.loads(result_str)
 
