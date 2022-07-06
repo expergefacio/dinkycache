@@ -7,7 +7,20 @@ from lzstring import LZString
 
 
 class Dinky:
+    """
+    Todo: Add more docstring
+        https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+    """
+
     def __init__(self, dbfile: str = "dinkycache.db"):
+        """
+        Checks wheter the database exists, creates it if not.
+        Checks for, ande delete expired entries
+
+        Args:
+            dbfile (str, optional):  The name (and path) of sqlite3 database.
+                Defaults to 'dinkycache.db'
+        """
         self.lz = LZString()
         self.db = dbfile
 
@@ -24,23 +37,29 @@ class Dinky:
                     f"('id' text, 'data' text, 'timestamp' int, "
                     f"PRIMARY KEY('id'))"
                 )
-        expired = []
-        with self._SQLite(self.db) as cur:
+            expired = []
             rows = cur.execute(
                 f"SELECT id, timestamp FROM 'dinkycache'"
-                f"WHERE timestamp > 0 ORDER BY timestamp ASC LIMIT 3"
+                f"WHERE timestamp > 0 ORDER BY timestamp ASC LIMIT 5"
             )
             for row in rows:
                 now = int(time())
-                print(
-                    f"init: timestamp {row['timestamp']} expires in {row['timestamp'] - now}"
-                )
                 if now > row["timestamp"]:
                     expired.append(row["id"])
         for item in expired:
             self.delete(hash=item)
 
     def read(self, id: str):
+        """
+        Does a lookup in the database
+
+        Args:
+            id (str):  The id to look for in the database
+
+        Returns:
+            The value at the corresponding id if it exists and is not expired,
+                False otherwise.
+        """
         result = False
         hashed = sha256(id.encode("utf-8")).hexdigest()
         with self._SQLite(self.db) as cur:
@@ -50,7 +69,7 @@ class Dinky:
         if dbdata is not None:
             now = int(time())
             timestamp = int(dbdata["timestamp"])
-            if now < timestamp:
+            if now < timestamp or timestamp == 0:
                 result_str = self.lz.decompressFromBase64(dbdata["data"])
                 result = json.loads(result_str)
             else:
@@ -58,6 +77,18 @@ class Dinky:
         return result
 
     def write(self, id: str, data: str, ttl: int = 172800):  # 48hours ttl
+        """
+        Writes a row to the database
+
+        Args:
+            id (str):  The id to store the data under
+            data (str): The value to store
+            ttl (int, optional): Time to live for the data, specified in seconds.
+                Set to 0 for permanent storage. Defaults to 48 hours.
+
+        Returns:
+            Hash of the stored id, False otherwise.
+        """
         result = hashed = sha256(id.encode("utf-8")).hexdigest()
         if ttl:
             timestamp = int(time()) + int(ttl)
@@ -83,6 +114,19 @@ class Dinky:
         return result
 
     def delete(self, id: str = False, hash: str = False):
+        """
+        Deletes a row in the database, specified by either id or hash
+
+        Args:
+            id (str, optional):  The id of the row to delete, defaults to False
+            hash (str, optional): The hash of the row to delete, defaults to False
+
+        Returns:
+            True
+
+        Raises:
+            TypeError: If neither id nor hash is specified
+        """
         if id:
             hashed = sha256(id.encode("utf-8")).hexdigest()
         elif hash:
