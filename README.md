@@ -53,6 +53,22 @@ if results == False:
     results = get_some_data(id)
     Dinky().write(id, results)
 ```
+Third option is to use it like this:
+
+```python
+    #Write:
+    d = Dinky()
+    d.id = "test"
+    d.data = {"whatever": "floats"}
+    d.setTTL(24) #hr
+    d.write()
+    print(d.data)
+
+    #Read:
+    d = Dinky(ignore_garbage_colletion = true)
+    d.id = "test
+    print(D.read())
+```
 
 In either case `results` will contain the data from cache if its there and within the specified TTL. Or it will call your get_some_data() to try and fetch the data instead.
 
@@ -60,19 +76,29 @@ In either case `results` will contain the data from cache if its there and withi
 
 Custom database filename and time to live can be passed to Dinky on initialization
 
-Defaults are `dinkycache.db` and `2160` hours (90 days) TLL
+Avaialble settings and default values
+```python
+    dbfile: str = "dinkycache.db", 
+    ttl: int = 2160,
+    garbage_collection: int = 24,
+    garbage_iterations: int = 100,
+    ignore_garbage_colletion: bool = False
+```
 
+Set them in one of the following ways
 ```python
 Dinky('preferred.db', 24)
 Dinky(dbfile='preferred.db').read(id)
 Dinky(ttl=24).read(id)
-
-#OR
+```
+OR
+```python
 settings = ['preferred.db', 24]
 Dinky(*settings).read(id)
 Dinky(*settings).write(id, results)
-
-#OR:
+```
+OR
+```python
 settings = {
     'dbfile' = 'preferred.db',
     'ttl' = 24,

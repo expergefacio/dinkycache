@@ -1,3 +1,4 @@
+from cgi import test
 from dinky import Dinky
 import random
 import json
@@ -21,6 +22,9 @@ def run():
     #compression_test()
     #openfoodfacts_data_test()
     #read_test()
+    #generate100k()
+    #read10k()
+    #poop()
     pass
 
 
@@ -77,6 +81,40 @@ def generate_word():
 def b():
     return bool(random.randint(0,1)) 
 #endregion
+
+def generate100k():
+    strt = time.perf_counter()
+    for i in range(1, 100000):
+        now1 = time.perf_counter()
+        rd = dic(4)
+
+        Dinky().write(str(i), rd)
+
+        now = time.perf_counter()
+        print(now1 - now)
+    nd = time.perf_counter()
+    print((nd - strt) / 100000, "avg")
+    
+def read10k():
+    strt = time.perf_counter()
+    for i in range(1, 10000):
+        Dinky().read(str(i))
+    nd = time.perf_counter()
+    print((nd - strt) / 10000, "avg")
+
+def poop():
+    strt = time.perf_counter()
+    dink = Dinky()
+    dink.id = "test2"
+    dink.data = {"whatever": "floats"}
+    dink.setTTL(24) #hr
+    dink.write()
+    first = time.perf_counter()
+
+    print(Dinky().read("test2"))
+
+    sec = time.perf_counter()
+    print(f"{first - strt}, {sec - first}")
 
 
 #generate random

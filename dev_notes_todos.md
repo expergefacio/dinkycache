@@ -1,23 +1,75 @@
 # changelog
 Intended for display in vscode, not as document 😅
 
-## TODO to complete version 0.1
+## TODO towards v 0.3
+⏺ Move garbage collection from init to write, to make read more faster?  
 ⏺ Look over code  
-⏺ Run tests  
+⏺ Run more tests?  
 ⏺ Make sure readme is on spot  
-⏺ Test if _expiry_garbage_collector() actually need its own db-file  
+⏺ Create package for Pypi 😁  
+✅ Custom TTL  
+✅ Test if _expiry_garbage_collector() actually need its own db-file  
         or could it use the default file with its own table or  
         would that affect performance if dafault file gets large  
-⏺ Consider adding option to use as common OOP:  
+✅ Consider adding option to use as common OOP:  
 ```python
 d = Dinky()
-d.setTTT(24)
+d.setTTL(24)
 d.setFile("db.db")
 d.id = "something"
 d.data = {"what": "ever"}
 d.write()
 ```
-⏺ Create package for Pypi 😁  
+
+
+## From version 0.1 (unfinished) -> 0.2 (time to get the bugs out)
+### 🔴 CHANGE: everything uses self.variable
+To allow for this sort of usercase
+Write
+```python
+    d = Dinky()
+    d.id = "test"
+    d.data = {"whatever": "floats"}
+    d.setTTL(24) #hr
+    d.write()
+
+    print(d.data)
+```
+Read:
+```python
+    d = Dinky(ignore_garbage_colletion = true)
+    d.id = "test
+    print(D.read())
+```
+### 🔵 NEW: Added .setTTL() for more non defacto use cases
+
+### 🔵 NEW: Added more config to __init__:
+```python
+    dbfile: str = "dinkycache.db", 
+    ttl: int = 2160,
+    garbage_collection: int = 24,
+    garbage_iterations: int = 100,
+    ignore_garbage_colletion: bool = False
+```
+
+
+## testing:
+testing DB:
+38.1mb: 100k writes str_len 40~1500: avg 11.3ms (incl generation)
+
+10k reads 10.6 ms avg
+10k reads no ui: 6.57 ms avg 
+
+test:
+.db-file segregation for garbage collection
+5k reads and garbage_iterations set to 2,
+6.4673496099999990 avg without segregation
+6.3988324038000005 avg with segregation
+
+
+
+## no testing for edge cases:
+
 
 ## From version Null -> 0.1 (unfinished)
 
