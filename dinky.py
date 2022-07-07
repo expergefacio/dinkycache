@@ -6,34 +6,41 @@ from hashlib import sha256
 from lzstring import LZString
 
 # dinkycache
-# version 0.2
+# version 0.3
 
 class Dinky:
     def __init__(
             self, 
             dbfile: str = "dinkycache.db", 
             ttl: int = 2160,
-            garbage_collection: int = 24,
-            garbage_iterations: int = 100,
-            ignore_garbage_colletion: bool = False
+            purge_rows: bool = True,
+            row_limit: int = 5000,
+            clean_expired: bool = True,
+            clean_hrs: int = 24,
+            clean_iterations: int = 100,
         ):
         self.lz = LZString()
         self.now = int(time())
         self.setTTL(ttl)
         self.dbfile = dbfile
-        self.garbage_timer = garbage_collection
-        self.gb_iterations = garbage_iterations
+        self.clean_hrs = clean_hrs
+        self.clean_iterations = clean_iterations
+        self.row_limit = row_limit
         self.id = None
         self.data = None
 
         with self._SQLite(self.dbfile) as cur:
             cur.execute(
                 f"CREATE TABLE IF NOT EXISTS 'dinkycache' "
-                f"('id' text primary key, 'data' text, 'expiry' int)"
+                f"('id' text primary key, 'data' text, "
+                f"'expiry' int, 'created' int)"
             )
 
-        if ignore_garbage_colletion is False:
-            self._expiry_garbage_collector()
+        if purge_rows:
+            self._purgelines()
+
+        if clean_expired:
+            self._clean_expired()
 
     def read(self, id: str = False):
         self.result = False
@@ -74,23 +81,34 @@ class Dinky:
                 cur.execute(
                     f"UPDATE dinkycache "
                     f"SET data = '{compressed}', "
-                    f"expiry = '{self.expires}' "
+                    f"expiry = '{self.expires}', "
+                    f"created = '{self.now}' "
                     f"WHERE id = '{hashed}'"
                 )
             else:
                 cur.execute(
                     f"INSERT INTO dinkycache "
-                    f"VALUES ('{hashed}', '{compressed}', '{self.expires}')"
+                    f"VALUES ('{hashed}', '{compressed}', "
+                    f"'{self.expires}', '{self.now}')"
                 )
         return self.result
     
     def setTTL(self, ttl: int = 2160):
         self.ttl_millis = ttl * (60 * 60)
         self.expires = self.ttl_millis + self.now if ttl else 0
+    
+    def _purgelines(self):
+        with self._SQLite(self.dbfile) as cur:
+            cur.execute(
+                f"DELETE FROM dinkycache WHERE id IN "
+                f"(SELECT id FROM dinkycache "
+                f"ORDER BY created DESC LIMIT -1 "
+                f"OFFSET {self.row_limit})"
+            )
 
-    def _expiry_garbage_collector(self):
+    def _clean_expired(self):
         """Internal method to clear expired cache entries"""
-        binday = self.garbage_timer * 60 * 60
+        binday = self.clean_hrs * 60 * 60
         iterations = None
         timestamp = None
 
@@ -106,7 +124,8 @@ class Dinky:
                 f"SELECT writes, timestamp FROM binman WHERE id = 1"
             ).fetchone()
 
-        if (self.now - timestamp > binday) or iterations > self.gb_iterations:
+        if (self.now - timestamp > binday or
+            iterations > self.clean_iterations):
             with self._SQLite(self.dbfile) as cur:
                 cur.execute(
                     f"DELETE FROM dinkycache "
@@ -125,6 +144,11 @@ class Dinky:
                     f"SET writes = {iterations + 1} "
                     f"WHERE id = 1"
                 )
+    
+    def _dev_runSQL(self, sql):
+        with self._SQLite(self.dbfile) as cur:
+            return cur.execute(sql).fetchall()
+
 
     class _SQLite:
         def __init__(self, dbfile):

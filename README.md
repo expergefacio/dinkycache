@@ -67,22 +67,22 @@ Third option is to use it like this:
     #Read:
     d = Dinky(ignore_garbage_colletion = true)
     d.id = "test
-    print(D.read())
+    print(d.read())
 ```
 
 In either case `results` will contain the data from cache if its there and within the specified TTL. Or it will call your get_some_data() to try and fetch the data instead.
 
 ## Settings
 
-Custom database filename and time to live can be passed to Dinky on initialization
-
 Avaialble settings and default values
 ```python
-    dbfile: str = "dinkycache.db", 
-    ttl: int = 2160,
-    garbage_collection: int = 24,
-    garbage_iterations: int = 100,
-    ignore_garbage_colletion: bool = False
+    dbfile: str = "dinkycache.db",  # name of sqlite file
+    ttl: int = 2160,                # time to live in hours, default 2160 = 90 days, 0 = no expiry
+    purge_rows: bool = True,        # will enforce row_limit if true
+    row_limit: int = 5000,          # maximum number of rows in db
+    clean_expired: bool = True,     # will delete outdated entries if true
+    clean_hrs: int = 24,            # time between cleanups of expried entries
+    clean_iterations: int = 100,    # iterations (writes) between cleanups
 ```
 
 Set them in one of the following ways
@@ -107,7 +107,13 @@ Dinky(**settings).read(id)
 Dinky(**settings).write(id, results)
 
 ```
+## Cleanup / Garbage Collection
+Script will try to clean out expired entries every time it is run if one of the following is met.
+It has been minimum `garbage_collection: int = 24` hours since last cleanup
+OR
+There have been more than `garbage_iterations: int = 100` invocations since last cleanup
 
+The cleanup function will make the script 75% slower when it runs
 
 ## Performance
 
@@ -115,7 +121,7 @@ This wont ever compete with Redis, MongoDB or anything like that. This is ment t
 
 ### Tests:
 
-Reads from DB1
+Reads from DB 1
 ```
 10k entries of 40 to 1500 characters:
 
@@ -123,12 +129,20 @@ Reads from DB1
 100 reads = 0.6 sec (0.006 avg)
 ```
 
-Reads from DB2
+Reads from DB 2
 ```
 10k entries of 40 to 150000 characters:
 1 read = 0.003 to 0.022 sec
 100 reads = 1.1 to 2.4 sec (0.015 avg)
 ```
+
+Test DB 3:
+```
+38.1mb: 100k writes str_len 40~1500: avg 11.3ms (incl generation)
+
+10k reads: 6.57 ms avg 
+```
+
 
 ## Security
 Ids are hashed, so you may put anything in there

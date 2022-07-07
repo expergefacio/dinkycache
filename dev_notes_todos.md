@@ -1,12 +1,15 @@
 # changelog
 Intended for display in vscode, not as document 😅
 
-## TODO towards v 0.3
-⏺ Move garbage collection from init to write, to make read more faster?  
+## Todo
 ⏺ Look over code  
 ⏺ Run more tests?  
 ⏺ Make sure readme is on spot  
+⏺ Docstringss?  
+⏺ Consider default options/settings  
 ⏺ Create package for Pypi 😁  
+
+✅ Added _purgelines() and row_limit
 ✅ Custom TTL  
 ✅ Test if _expiry_garbage_collector() actually need its own db-file  
         or could it use the default file with its own table or  
@@ -20,7 +23,13 @@ d.id = "something"
 d.data = {"what": "ever"}
 d.write()
 ```
+⏺ ~~Move garbage collection from init to write, to make read more faster?~~
+        void for now, can be done on runtime by passing `clean_expired=False`
 
+
+## From version 0.2 (unfinished) -> 0.3
+### 🔵 NEW: added _purgelines and max_rows ets
+### 🔴 CHANGE: some argument and propertie names changed
 
 ## From version 0.1 (unfinished) -> 0.2 (time to get the bugs out)
 ### 🔴 CHANGE: everything uses self.variable
