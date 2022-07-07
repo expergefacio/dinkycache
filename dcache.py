@@ -10,6 +10,24 @@ class Dinky:
     """
     Todo: Add more docstring
         https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+
+    Todo: add a separate timestamp => possible to set max tables and automatic purge oldest
+    Todo: add a method to automatically delete expired and/or purge items in set interval
+    Todo:   needs method to purge max
+    Todo:       clean oldes / clean least accessed?
+    Todo:   would need a separate __dinky_settings database
+
+    example:
+        Dinky(autoclean=True, cleanexpired=True, interval=5hrs, maxdbrows=100)
+            - 0 values disables
+        later runs should be...
+        Dinky(autoclean=True).read(id) to invoke and check whether to clean or not
+        Dinky().read(id) would skip the check
+        another run of
+        Dinky(autoclean=True, AutoPurgeOld=True interval=5hrs, maxdbrows=100)
+        should update settings, but not reset the timer => shorter and it would run earlier
+
+
     """
 
     def __init__(self, dbfile: str = "dinkycache.db"):
@@ -23,31 +41,11 @@ class Dinky:
         """
         self.lz = LZString()
         self.db = dbfile
-
         with self._SQLite(self.db) as cur:
-            count = cur.execute(
-                f"SELECT count(name) "
-                f"FROM sqlite_master "
-                f"WHERE type='table' "
-                f"AND name='dinkycache'"
-            ).fetchone()[0]
-            if count == 0:
-                cur.execute(
-                    f"CREATE TABLE 'dinkycache' "
-                    f"('id' text, 'data' text, 'timestamp' int, "
-                    f"PRIMARY KEY('id'))"
-                )
-            expired = []
-            rows = cur.execute(
-                f"SELECT id, timestamp FROM 'dinkycache'"
-                f"WHERE timestamp > 0 ORDER BY timestamp ASC LIMIT 5"
+            cur.execute(
+                f"CREATE TABLE IF NOT EXISTS 'dinkycache' "
+                f"('id' text primary key, 'data' text, 'timestamp' int)"
             )
-            for row in rows:
-                now = int(time())
-                if now > row["timestamp"]:
-                    expired.append(row["id"])
-        for item in expired:
-            self.delete(hash=item)
 
     def read(self, id: str):
         """
@@ -78,6 +76,8 @@ class Dinky:
 
     def write(self, id: str, data: str, ttl: int = 172800):  # 48hours ttl
         """
+        todo: really decide what to do with default ttl, thinking 0
+
         Writes a row to the database
 
         Args:
@@ -115,6 +115,9 @@ class Dinky:
 
     def delete(self, id: str = False, hash: str = False):
         """
+        todo: decide wether we want the hash function here
+                ! if so, add it to read as well
+
         Deletes a row in the database, specified by either id or hash
 
         Args:
@@ -136,6 +139,26 @@ class Dinky:
         with self._SQLite(self.db) as cur:
             cur.execute(f"DELETE FROM dinkycache WHERE id = '{hashed}'")
         return True
+
+    def _autoclean(self):
+        return False
+
+    def clean(self):
+        """
+        Cleans the database for expired rows
+
+        Returns:
+            True
+        """
+        with self._SQLite(self.db) as cur:
+            cur.execute(
+                f"DELETE FROM dinkycache "
+                f"WHERE timestamp > 0 AND timestamp < {int(time())}"
+            )
+        return True
+
+    def purge_max(self, maxrows: int):
+        return False
 
     class _SQLite:
         def __init__(self, file):
