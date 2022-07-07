@@ -10,6 +10,7 @@ Intended for display in vscode, not as document 😅
 ⏺ Create package for Pypi 😁  
 
 ✅ Added _purgelines() and row_limit
+✅ Added 'created' in db so oldest can be cleared
 ✅ Custom TTL  
 ✅ Test if _expiry_garbage_collector() actually need its own db-file  
         or could it use the default file with its own table or  

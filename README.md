@@ -82,7 +82,7 @@ Avaialble settings and default values
     row_limit: int = 5000,          # maximum number of rows in db
     clean_expired: bool = True,     # will delete outdated entries if true
     clean_hrs: int = 24,            # time between cleanups of expried entries
-    clean_iterations: int = 100,    # iterations (writes) between cleanups
+    clean_iterations: int = 100,    # iterations (reads/writes) between cleanups
 ```
 
 Set them in one of the following ways
