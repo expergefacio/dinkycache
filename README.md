@@ -7,8 +7,8 @@ Intended for quick set up, in development and small scale projects.
 
 Uses `sqlite` for storage and `lzstring` for compression.
 
-Stores any data that can be parsed in to a string with `json.dumps()` and `json.loads()`
-Works as intended in most cases, but returns a `list` if supplied a `tuple`
+Stores any data that can be parsed in to a string with `json.dumps()` and `json.loads()`  
+Returns `int`, `dict` and `str` just fine, but returns a `list` if supplied a `tuple`
 
 ## Dependencies
 ```python
@@ -147,20 +147,20 @@ if (result := d.read(id) == False):
 ```
 
 ## clean_expired, clean_hrs and clean_iterations
-If `clean_expired = True`, script will try to clean out expired entries every time data is **written** if one of the following conditions are met.
-It has been minimum `clean_hrs: int = 24` hours since last cleanup
-OR
-There have been more than `clean_iterations: int = 100` invocations since last cleanup
+If `clean_expired = True`, script will try to clean out expired entries every time data is **written** if one of the following conditions are met.  
+It has been minimum `clean_hrs: int = 24` hours since last cleanup  
+OR  
+There have been more than `clean_iterations: int = 100` invocations since last cleanup  
 
 The cleanup function comes at a 75% performance cost, so if it runs on every 100 write, that amounts to a 7.5% average performance cost.
 
 `clean_expired` might therefore be a much better alternative than using `purge_rows` for larger amounts of data.
 
 ## purge_rows and row_limit
-If `purge_rows = True`, script will try to clean out overflowing lines every time data is **written**.
+If `purge_rows = True`, script will try to clean out overflowing lines every time data is **written**.  
 `row_limit = int` sets the maximum lines in the database.
 
-This comes at a great performance cost for larger databases. 462 ms for 100k rows on a 1.8 ghz Intel Core i5.
+This comes at a great performance cost for larger databases. 462 ms to sort 100k rows on a 1.8 ghz Intel Core i5.
 
 It is probably best used for small databases and/or databases with small entries.
 
