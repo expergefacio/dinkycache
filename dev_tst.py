@@ -23,12 +23,25 @@ def run():
     #openfoodfacts_data_test()
     #read_test()
     #generate100k()
-    #generatenr(100)
+    #generatenr(100000)
     #read10k()
     #poop()
     sql()
     pass
 
+def sql():
+    #SELECT id FROM mytable ORDER BY id ASC LIMIT 100
+    #DELETE FROM dinkycache WHERE id IN (SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 1000)
+    #(SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 100)
+    strt = time.perf_counter()
+    result = Dinky()._dev_runSQL(
+        "SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 100"
+    )
+    nd = time.perf_counter()
+    for x in result:
+        print(x[0])
+    
+    print((nd - strt), " exec")
 
 #region: generation/helper functions
 def r():
@@ -100,9 +113,9 @@ def generate100k():
 
 def generatenr(nr):
     strt = time.perf_counter()
-    rd = dic(15)
+    rd = dic(5)
     for i in range(1, nr):
-        Dinky(ignore_garbage_colletion=True).write(str(i), rd)
+        Dinky(clean_expired=False, purge_rows=False).write(str(i), rd)
 
     nd = time.perf_counter()
     print((nd - strt) / nr, "avg")
@@ -128,20 +141,6 @@ def poop():
     sec = time.perf_counter()
     print(f"{first - strt}, {sec - first}")
 
-
-def sql():
-    #SELECT id FROM mytable ORDER BY id ASC LIMIT 100
-    #DELETE FROM dinkycache WHERE id IN (SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 1000)
-    #(SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 100)
-    strt = time.perf_counter()
-    result = Dinky()._dev_runSQL(
-        "SELECT COUNT(*) FROM dinkycache"
-    )
-    nd = time.perf_counter()
-    for x in result:
-        print(x[0])
-    
-    print((nd - strt), " exec")
 
 
 #generate random

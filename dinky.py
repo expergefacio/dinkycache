@@ -179,6 +179,7 @@ class Dinky:
     def _purgerows(self):
         """Internal method to clear overflowing rows"""
         with self._SQLite(self.dbfile) as cur:
+            #count to save sorting if row_limit not met
             count = cur.execute(
                 f"SELECT COUNT(*) FROM dinkycache"
             ).fetchone()[0]

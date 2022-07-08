@@ -1,13 +1,14 @@
 # dinkycache for python projects
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A very small name/value cache for python. 
+A very small and flexible name/value cache for python. 
 
 Intended for quick set up, in development and small scale projects.
 
 Uses `sqlite` for storage and `lzstring` for compression.
 
-Accepts any data that can be parsed in to a string with `json.loads()`
+Stores any data that can be parsed in to a string with `json.dumps()` and `json.loads()`
+Works as intended in most cases, but returns a `list` if supplied a `tuple`
 
 ## Dependencies
 ```python
@@ -20,18 +21,19 @@ Download the dcache.py file to your project folder and import
 from dinky import Dinky
 ```
 
-Has two methods called like so:
+Has 3 main methods called like so:
 ```python
-Dinky().read(str)
-Dinky().write(str, dict)
+Dinky().read(str: id)
+Dinky().write(str: id, optional:data)
+Dinky().delete(str: id) -> bool
 ```
 
-## Example
+## Examples with default settings
 ```python
 from dcache import Dinky
 
 #gets data from some slow source
-def get_some_data(id):
+def fetch_data(id):
     return "some data"
 
 id = "001"
@@ -39,7 +41,7 @@ id = "001"
 ```
 Then where you would normaly write:
 ```python
-results = get_some_data(id)
+results = fetch_data(id)
 ```
 Write these two lines instead:
 ```python
@@ -50,11 +52,10 @@ If you are running Python < 3.8 or just don't like [walruses](https://peps.pytho
 ```python
 results = Dinky().read(id)
 if results == False:
-    results = get_some_data(id)
+    results = fetch_data(id)
     Dinky().write(id, results)
 ```
-Third option is to use it in this fashion:
-
+This is also an option, its there, fully supported, however not further documented:
 ```python
     #Write:
     d = Dinky()
@@ -67,7 +68,7 @@ Third option is to use it in this fashion:
     #Read:
     d = Dinky(ignore_garbage_colletion = true)
     d.id = "test
-    print(d.read())
+    print(results := d.read())
 ```
 
 In either case `results` will contain the data from cache if its there and within the specified TTL. Or it will call your get_some_data() to try and fetch the data instead.
@@ -87,30 +88,36 @@ Avaialble settings and default values
 
 Set them in one of the following ways
 ```python
-Dinky('preferred.db', 24)
-Dinky(dbfile='preferred.db').read(id)
-Dinky(ttl=24).read(id)
+# Positional arguments:
+Dinky('preferred.db', 24).read(id)
 ```
 OR
 ```python
+# Keyword arguments:
+Dinky(dbfile='preferred.db').read(id)
+```
+OR
+```python
+# Unpack list as positional arguments:
 settings = ['preferred.db', 24]
 Dinky(*settings).read(id)
-Dinky(*settings).write(id, results)
 ```
 OR
 ```python
+# Unpack dict as keyword arguments:
 settings = {
     'dbfile' = 'preferred.db',
     'ttl' = 24,
 }
 Dinky(**settings).read(id)
-Dinky(**settings).write(id, results)
-
 ```
 
-You can destruct a dict an pass it as settings each time you invoke `Dinky(**settings)`,
-or do the same, but assign the new `Dinky object` to a variable and reuse it that way:
+## Examples of use with self-defined settings
 
+You can destruct a dict an pass it as settings each time you invoke `Dinky(**settings)`,
+or do the same, but assign the new `Dinky object` to a `variable` and reuse it that way:
+
+### Invoke on every use:
 ```python
 settings = {
     'dbfile' = 'preferred.db',
@@ -119,20 +126,43 @@ settings = {
     'row_limit' = 100,
     'ttl' = 0,
 }
-d = Dinky(**settings)
 
-if (result := d.read(id) == False):
-    d.write(id, result := fetch_data(id))
+if (result := Dinky(**settings).read(id) == False):
+    Dinky(**settings).write(id, result := fetch_data(id))
 
 ```
 
-## Cleanup / Garbage Collection
-Script will try to clean out expired entries every time it is run if one of the following is met.
-It has been minimum `garbage_collection: int = 24` hours since last cleanup
-OR
-There have been more than `garbage_iterations: int = 100` invocations since last cleanup
+### Retain Dinky object:
+```python
+d = Dinky(
+    'dbfile' = 'preferred.db',
+    'purge_rows' = True,
+    'clean_expired' = False,
+    'row_limit' = 100,
+    'ttl' = 0,
+)
 
-The cleanup function will make the script 75% slower when it runs
+if (result := d.read(id) == False):
+    d.write(id, result := fetch_data(id))
+```
+
+## clean_expired, clean_hrs and clean_iterations
+If `clean_expired = True`, script will try to clean out expired entries every time data is **written** if one of the following conditions are met.
+It has been minimum `clean_hrs: int = 24` hours since last cleanup
+OR
+There have been more than `clean_iterations: int = 100` invocations since last cleanup
+
+The cleanup function comes at a 75% performance cost, so if it runs on every 100 write, that amounts to a 7.5% average performance cost.
+
+`clean_expired` might therefore be a much better alternative than using `purge_rows` for larger amounts of data.
+
+## purge_rows and row_limit
+If `purge_rows = True`, script will try to clean out overflowing lines every time data is **written**.
+`row_limit = int` sets the maximum lines in the database.
+
+This comes at a great performance cost for larger databases. 462 ms for 100k rows on a 1.8 ghz Intel Core i5.
+
+It is probably best used for small databases and/or databases with small entries.
 
 ## Performance
 
