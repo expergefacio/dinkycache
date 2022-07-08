@@ -47,8 +47,10 @@ class Dinky:
         self.now = int(time())
         self.setTTL(ttl)
         self.dbfile = dbfile
+        self.clean_expired = clean_expired
         self.clean_hrs = clean_hrs
         self.clean_iterations = clean_iterations
+        self.purge_rows = purge_rows
         self.row_limit = row_limit
         self.id = None
         self.data = None
@@ -60,11 +62,6 @@ class Dinky:
                 f"'expiry' int, 'created' int)"
             )
 
-        if purge_rows:
-            self._purgerows()
-
-        if clean_expired:
-            self._clean_expired()
 
     def read(self, id: str = False):
         """
@@ -78,7 +75,7 @@ class Dinky:
         self.result = False
         if not self.id:
             if not id:
-                raise Exception("Dinkyread: ID must be supplied 🤯")
+                raise Exception("Dinky.read(): ID must be supplied 🤯")
             self.id = id
 
         hashed = sha256(self.id.encode("utf-8")).hexdigest()
@@ -105,12 +102,12 @@ class Dinky:
         Returns:
             Hash of the stored id, False otherwise.
         """
+        self.result = False
         if isinstance(ttl, int):
             self.setTTL(ttl)
-        self.result = False
         if not self.id or not self.data:
             if not id or not data:
-                raise Exception("Dinkywrite: ID and DATA must be supplied 🤯")
+                raise Exception("Dinky.write(): ID and DATA must be supplied 🤯")
             self.id, self.data = id, data
 
         self.result = hashed = sha256(self.id.encode("utf-8")).hexdigest()
@@ -135,6 +132,13 @@ class Dinky:
                     f"VALUES ('{hashed}', '{compressed}', "
                     f"'{self.expires}', '{self.now}')"
                 )
+        
+        if self.purge_rows:
+            self._purgerows()
+
+        if self.clean_expired:
+            self._clean_expired()
+
         return self.result
 
     def delete(self, id: str = False, hash: str = False):
@@ -148,13 +152,14 @@ class Dinky:
         Raises:
             Exeption: If neither id nor hash is specified
         """
-        if not id and not hash:
-            raise Exception("delete() missing 1 required argument: 'id' or 'hash'")
+        if not self.id:
+            if not id and not hash:
+                raise Exception("Dinky.delete() missing 1 required argument: 'id' or 'hash'")
 
-        hashed = hash if hash else self._hash(id)
+            self.id = hash if hash else self._hash(id)
             
         with self._SQLite(self.db) as cur:
-            cur.execute(f"DELETE FROM dinkycache WHERE id = '{hashed}'")
+            cur.execute(f"DELETE FROM dinkycache WHERE id = '{self.id}'")
         return True
     
     def setTTL(self, ttl: int = 2160):
@@ -174,15 +179,20 @@ class Dinky:
     def _purgerows(self):
         """Internal method to clear overflowing rows"""
         with self._SQLite(self.dbfile) as cur:
-            cur.execute(
-                f"DELETE FROM dinkycache WHERE id IN "
-                f"(SELECT id FROM dinkycache "
-                f"ORDER BY created DESC LIMIT -1 "
-                f"OFFSET {self.row_limit})"
-            )
+            count = cur.execute(
+                f"SELECT COUNT(*) FROM dinkycache"
+            ).fetchone()[0]
+            if count > self.row_limit:
+                cur.execute(
+                    f"DELETE FROM dinkycache WHERE id IN "
+                    f"(SELECT id FROM dinkycache "
+                    f"ORDER BY created DESC LIMIT -1 "
+                    f"OFFSET {self.row_limit})"
+                )
+
 
     def _clean_expired(self):
-        """Internal method to clear expired cache entries"""
+        """Private method: Clears expired cache entries"""
         binday = self.clean_hrs * 60 * 60
         iterations = None
         timestamp = None
@@ -221,7 +231,7 @@ class Dinky:
                 )
     
     def _dev_runSQL(self, sql):
-        """Runs SQL in contexts for dev purposes"""
+        """Runs SQL in contexts for testing"""
         with self._SQLite(self.dbfile) as cur:
             return cur.execute(sql).fetchall()
 
