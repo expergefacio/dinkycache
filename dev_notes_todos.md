@@ -5,27 +5,54 @@ Intended for display in vscode, not as document 😅
 ⏺ Look over code  
 ⏺ Run more tests?  
 ⏺ Make sure readme is on spot  
-⏺ Docstringss?  
+⏺ Docstrings?
+        https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+        Added some, but sparingly, imo honesty docstring and help() is a garbled mess
+        a thorough readme.md is a better option
 ⏺ Consider default options/settings  
 ⏺ Create package for Pypi 😁  
+⏺ Really decide what to do with default ttl, thinking 0  
+        Might be the best option for small database, but does require purge_rows to be true  
+        A hight default ttl and ´purge_rows = false´ has less performance cost hence better for large data and large db-files?  
+        While ttl=0 and purge_rows true is probably a better option when when working with fewer rows and smaller data  
+        Hence we should pick one of these options:  
+        ```
+        {
+            ttl: int = 2160,
+            purge_rows: bool = False,
+            clean_expired: bool = True,
+        }
+        ```
+        or
+        ```
+        {
+            ttl: int = 0,
+            purge_rows: bool = True,
+            clean_expired: bool = False,
+        }
+        ```
 
-✅ Added _purgelines() and row_limit
-✅ Added 'created' in db so oldest can be cleared
+✅ Added delete()
+        Used Expeption instead of TypeError, not sure if thats correct tho
+        however we are checing if argument is supplied, not type of the argument supplied?
+✅ Added _hash() to wrap the string sha256(id.encode("utf-8")).hexdigest()
+✅ Added _purgerows() and row_limit
+✅ Added field 'created' in db so oldest can be cleared
 ✅ Custom TTL  
 ✅ Test if _expiry_garbage_collector() actually need its own db-file  
         or could it use the default file with its own table or  
         would that affect performance if dafault file gets large  
-✅ Consider adding option to use as common OOP:  
-```python
-d = Dinky()
-d.setTTL(24)
-d.setFile("db.db")
-d.id = "something"
-d.data = {"what": "ever"}
-d.write()
-```
+✅ Added support for common OOP usecase:  
+
 ⏺ ~~Move garbage collection from init to write, to make read more faster?~~
         void for now, can be done on runtime by passing `clean_expired=False`
+
+## From version 0.3 -> 0.4
+Added delete()
+        Used Expeption instead of TypeError, not sure if thats correct tho
+        however we are checing if argument is supplied, not type of the argument supplied?
+Added _hash() to wrap the string sha256(id.encode("utf-8")).hexdigest()
+Added some docstring
 
 
 ## From version 0.2 (unfinished) -> 0.3

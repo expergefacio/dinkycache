@@ -53,7 +53,7 @@ if results == False:
     results = get_some_data(id)
     Dinky().write(id, results)
 ```
-Third option is to use it like this:
+Third option is to use it in this fashion:
 
 ```python
     #Write:
@@ -107,6 +107,25 @@ Dinky(**settings).read(id)
 Dinky(**settings).write(id, results)
 
 ```
+
+You can destruct a dict an pass it as settings each time you invoke `Dinky(**settings)`,
+or do the same, but assign the new `Dinky object` to a variable and reuse it that way:
+
+```python
+settings = {
+    'dbfile' = 'preferred.db',
+    'purge_rows' = True,
+    'clean_expired' = False,
+    'row_limit' = 100,
+    'ttl' = 0,
+}
+d = Dinky(**settings)
+
+if (result := d.read(id) == False):
+    d.write(id, result := fetch_data(id))
+
+```
+
 ## Cleanup / Garbage Collection
 Script will try to clean out expired entries every time it is run if one of the following is met.
 It has been minimum `garbage_collection: int = 24` hours since last cleanup

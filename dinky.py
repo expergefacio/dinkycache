@@ -6,7 +6,7 @@ from hashlib import sha256
 from lzstring import LZString
 
 # dinkycache
-# version 0.3
+# version 0.4
 
 class Dinky:
     def __init__(
@@ -19,6 +19,30 @@ class Dinky:
             clean_hrs: int = 24,
             clean_iterations: int = 100,
         ):
+        """
+        - Handles settings on init
+        - Checks wheter the database exists, creates it if not
+        - Purges overflowing rows
+        - Checks for and deletes expired entries
+        Args:
+            dbfile (str, optional):  The name (and path) of sqlite3 database.
+                                     Defaults to 'dinkycache.db'
+            ttl (integer, optional): Time to live in hours
+                                     Defaults to 2160 hrs / 90 days
+            purge_rows (bools, optional):    Clear overflowing rows if True
+                                             Defaults True
+            row_limit (int, optional):       Maximum number of rows
+                                             Defaults 5000
+            clean_expired (bools, optional): Clean expired entries if True
+                                             Defaults True
+            clean_hrs (int, optional):       Clean on invocation if
+                                             set hours since last clean
+                                             Defaults 24
+            clean_iterations: int = 100,     Clean on invocation if
+                                             if > 'clean_iterations'
+                                             since last clean
+                                             Defaults 100
+        """
         self.lz = LZString()
         self.now = int(time())
         self.setTTL(ttl)
@@ -37,12 +61,20 @@ class Dinky:
             )
 
         if purge_rows:
-            self._purgelines()
+            self._purgerows()
 
         if clean_expired:
             self._clean_expired()
 
     def read(self, id: str = False):
+        """
+        Does a lookup in the database
+        Args:
+            id (str): The id to look for in the database
+        Returns:
+            The value at the corresponding id if it exists and is not expired,
+            False otherwise.
+        """
         self.result = False
         if not self.id:
             if not id:
@@ -62,7 +94,19 @@ class Dinky:
 
         return self.result
 
-    def write(self, id: str = False, data: str = False):
+    def write(self, id: str = False, data: str = False, ttl: int = False):
+        """
+        Writes a row to the database
+        Args:
+            id (str): The id to store the data under
+            data (str): The value to store
+            ttl (int, optional): Time to live for the data, specified in hours.
+                Set to 0 for permanent storage. Defaults to 2160 hours / 90 days.
+        Returns:
+            Hash of the stored id, False otherwise.
+        """
+        if isinstance(ttl, int):
+            self.setTTL(ttl)
         self.result = False
         if not self.id or not self.data:
             if not id or not data:
@@ -92,12 +136,43 @@ class Dinky:
                     f"'{self.expires}', '{self.now}')"
                 )
         return self.result
+
+    def delete(self, id: str = False, hash: str = False):
+        """
+        Deletes a row in the database, specified by either id or hash
+        Args:
+            id (str, optional):  The id of the row to delete, defaults to False
+            hash (str, optional): The hash of the row to delete, defaults to False
+        Returns:
+            True
+        Raises:
+            Exeption: If neither id nor hash is specified
+        """
+        if not id and not hash:
+            raise Exception("delete() missing 1 required argument: 'id' or 'hash'")
+
+        hashed = hash if hash else self._hash(id)
+            
+        with self._SQLite(self.db) as cur:
+            cur.execute(f"DELETE FROM dinkycache WHERE id = '{hashed}'")
+        return True
     
     def setTTL(self, ttl: int = 2160):
+        """
+        Public method:
+        Sets Time To Live in hours
+        Args:
+            ttl (int): Default 2160 hours
+        """
         self.ttl_millis = ttl * (60 * 60)
         self.expires = self.ttl_millis + self.now if ttl else 0
     
-    def _purgelines(self):
+    def _hash(self, id):
+        """Returns hash of id"""
+        return sha256(id.encode("utf-8")).hexdigest()
+    
+    def _purgerows(self):
+        """Internal method to clear overflowing rows"""
         with self._SQLite(self.dbfile) as cur:
             cur.execute(
                 f"DELETE FROM dinkycache WHERE id IN "
@@ -146,11 +221,13 @@ class Dinky:
                 )
     
     def _dev_runSQL(self, sql):
+        """Runs SQL in contexts for dev purposes"""
         with self._SQLite(self.dbfile) as cur:
             return cur.execute(sql).fetchall()
 
 
     class _SQLite:
+        """Private method: SQLite context manager"""
         def __init__(self, dbfile):
             self.file = dbfile
         def __enter__(self):
