@@ -1,5 +1,5 @@
 from cgi import test
-from dinky import Dinky
+from dinkycache import Dinky
 import random
 import json
 import time
@@ -13,7 +13,6 @@ print(" | __/ __| __|")
 print(" | |_\__ \ |_ ")
 print("  \__|___/\__|")
 print("              ")
-
 
 #"run" test funtions in here
 #exec at end of file
