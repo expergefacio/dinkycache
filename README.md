@@ -24,8 +24,8 @@ from dinky import Dinky
 Has 3 main methods called like so:
 ```python
 Dinky().read(str: id)
-Dinky().write(str: id, optional:data)
-Dinky().delete(str: id) -> bool
+Dinky().write(str: id, str:data, int:ttl)
+Dinky().delete(str: id) -> int
 ```
 
 ## Examples with default settings
@@ -66,7 +66,7 @@ This is also an option, its there, fully supported, however not further document
     print(d.data)
 
     #Read:
-    d = Dinky(ignore_garbage_colletion = true)
+    d = Dinky(clean_expired = False)
     d.id = "test
     print(results := d.read())
 ```
@@ -80,7 +80,8 @@ Avaialble settings and default values
     dbfile: str = "dinkycache.db",  # name of sqlite file
     ttl: int = 2160,                # time to live in hours, default 2160 = 90 days, 0 = no expiry
     purge_rows: bool = True,        # will enforce row_limit if true
-    row_limit: int = 5000,          # maximum number of rows in db
+    row_limit: int = 10000,         # maximum number of rows in db
+    row_overflow: int = 1000,       # buffer zone above row_limit before anything is deleted
     clean_expired: bool = True,     # will delete outdated entries if true
     clean_hrs: int = 24,            # time between cleanups of expried entries
     clean_iterations: int = 100,    # iterations (reads/writes) between cleanups
@@ -112,7 +113,7 @@ settings = {
 Dinky(**settings).read(id)
 ```
 
-## Examples of use with self-defined settings
+## Examples of use with user-defined settings
 
 You can destruct a dict an pass it as settings each time you invoke `Dinky(**settings)`,
 or do the same, but assign the new `Dinky object` to a `variable` and reuse it that way:
@@ -135,11 +136,11 @@ if (result := Dinky(**settings).read(id) == False):
 ### Retain Dinky object:
 ```python
 d = Dinky(
-    'dbfile' = 'preferred.db',
-    'purge_rows' = True,
-    'clean_expired' = False,
-    'row_limit' = 100,
-    'ttl' = 0,
+    dbfile = 'preferred.db',
+    purge_rows = True,
+    clean_expired = False,
+    row_limit = 100,
+    ttl = 0,
 )
 
 if (result := d.read(id) == False):
@@ -156,13 +157,32 @@ The cleanup function comes at a 75% performance cost, so if it runs on every 100
 
 `clean_expired` might therefore be a much better alternative than using `purge_rows` for larger amounts of data.
 
-## purge_rows and row_limit
+## purge_rows, row_limit and row_overflow
 If `purge_rows = True`, script will try to clean out overflowing lines every time data is **written**.  
-`row_limit = int` sets the maximum lines in the database.
+`row_limit = int` sets the maximum lines in the database.  
+`row_overflow = int` how many lines over `row_limit` before `row_limit`is enforced
 
-This comes at a great performance cost for larger databases. 462 ms to sort 100k rows on a 1.8 ghz Intel Core i5.
+This comes at a great performance cost for larger databases. 462 ms to sort 100k rows on a 1.8 ghz Intel Core i5. For this reason `row_overflow` is added as a threshold as a buffer, so that deletion dont happen on every call to `.write`.
 
 It is probably best used for small databases and/or databases with small entries.
+
+## Public methods
+### .read()
+Arguments `id` (string, required)
+Returns data corresponding to `id`, or False if there is no data
+Can be called without arguments on existing object if id has alredy been set.
+### .write()
+Arguments `id` (string, required), `data` (string, required), `tll` (int, optional)
+Stores the supplied `data` to that `id`, `tll` can be set here if not already passed on invocation
+Returns the hashed `id` or False
+Will do `clean_expired`and `purge_rows` if they are set True
+Can be called without arguments on existing object if id and data has alredy been set.
+
+### .delete()
+Arguments `id` (string, required)
+Deletes entry corresponding to that `id`
+Returns number of rows deletet, `1` or `0`.
+Can be called without arguments on existing object if id has alredy been set.
 
 ## Performance
 
@@ -200,6 +220,7 @@ Data is compressed to a string of base 64 characters, so you may put anything in
 Lzstring seem to have very high integrity, we have not been able to produce a test result where the input and output has not been equal.
 
 That said, what you put in is what you'll get out. There is no checking for html-tags and such. Just something to bevare of if for some reason you'll use it to store and later display user provided data.
+
 
 ## Compression
 Lzstring is not great for shorter strings, and does sometimes even increase to string lenght. However in testing we found that short strings (80 to 1500 chars) have an average compression rate of 98%, while strings longer than 60000 characters have an average compression rate of 48%. Testing was done with random as well as real world data.

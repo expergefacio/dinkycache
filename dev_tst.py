@@ -26,20 +26,20 @@ def run():
     #generatenr(100000)
     #read10k()
     #poop()
-    sql()
+    #sql()
     pass
 
 def sql():
-    #SELECT id FROM mytable ORDER BY id ASC LIMIT 100
-    #DELETE FROM dinkycache WHERE id IN (SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 1000)
-    #(SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 100)
+    # SELECT id FROM mytable ORDER BY id ASC LIMIT 100
+    # DELETE FROM dinkycache WHERE id IN (SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 1000)
+    # (SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 100)
     strt = time.perf_counter()
     result = Dinky()._dev_runSQL(
         "SELECT id FROM dinkycache ORDER BY created DESC LIMIT -1 OFFSET 100"
     )
     nd = time.perf_counter()
-    for x in result:
-        print(x[0])
+    #for x in result:
+    #    print(x[0])
     
     print((nd - strt), " exec")
 

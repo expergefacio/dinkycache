@@ -1,6 +1,11 @@
 # changelog
 Intended for display in vscode, not as document 😅
 
+## Issues:
+.write return hash if id and data supplied, otherwise false
+is odd behaviour, return hash if data actually written, so can be used in conditional statement?
+
+
 ## Todo
 ⏺ Look over code  
 ⏺ Run more tests?  
@@ -46,6 +51,14 @@ Intended for display in vscode, not as document 😅
 
 ⏺ ~~Move garbage collection from init to write, to make read more faster?~~
         void for now, can be done on runtime by passing `clean_expired=False`
+
+
+
+## From version 0.4 -> 0.5
+    added row_overflow
+    cleaned up code and testes SQL
+    fixed: .delete() returns True without checking
+
 
 ## From version 0.3 -> 0.4
 Added delete()

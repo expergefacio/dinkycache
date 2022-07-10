@@ -6,7 +6,7 @@ from hashlib import sha256
 from lzstring import LZString
 
 # dinkycache
-# version 0.4
+# version 0.5
 
 class Dinky:
     def __init__(
@@ -14,7 +14,8 @@ class Dinky:
             dbfile: str = "dinkycache.db", 
             ttl: int = 2160,
             purge_rows: bool = True,
-            row_limit: int = 5000,
+            row_limit: int = 10000,
+            row_overflow: int = 1000,
             clean_expired: bool = True,
             clean_hrs: int = 24,
             clean_iterations: int = 100,
@@ -32,7 +33,9 @@ class Dinky:
             purge_rows (bools, optional):    Clear overflowing rows if True
                                              Defaults True
             row_limit (int, optional):       Maximum number of rows
-                                             Defaults 5000
+                                             Defaults 10000
+            row_overflow (int, optional):    Number of rows before limit enforc
+                                             Defaults 1000
             clean_expired (bools, optional): Clean expired entries if True
                                              Defaults True
             clean_hrs (int, optional):       Clean on invocation if
@@ -52,6 +55,7 @@ class Dinky:
         self.clean_iterations = clean_iterations
         self.purge_rows = purge_rows
         self.row_limit = row_limit
+        self.row_overflow = row_overflow
         self.id = None
         self.data = None
 
@@ -141,14 +145,14 @@ class Dinky:
 
         return self.result
 
-    def delete(self, id: str = False, hash: str = False):
+    def delete(self, id: str = False, hash: str = False) -> int:
         """
         Deletes a row in the database, specified by either id or hash
         Args:
             id (str, optional):  The id of the row to delete, defaults to False
             hash (str, optional): The hash of the row to delete, defaults to False
         Returns:
-            True
+            Number of deleted rows
         Raises:
             Exeption: If neither id nor hash is specified
         """
@@ -160,7 +164,7 @@ class Dinky:
             
         with self._SQLite(self.db) as cur:
             cur.execute(f"DELETE FROM dinkycache WHERE id = '{self.id}'")
-        return True
+            return cur.rowcount
     
     def setTTL(self, ttl: int = 2160):
         """
@@ -183,7 +187,7 @@ class Dinky:
             count = cur.execute(
                 f"SELECT COUNT(*) FROM dinkycache"
             ).fetchone()[0]
-            if count > self.row_limit:
+            if count > (self.row_limit + self.row_overflow):
                 cur.execute(
                     f"DELETE FROM dinkycache WHERE id IN "
                     f"(SELECT id FROM dinkycache "
