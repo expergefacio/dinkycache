@@ -168,21 +168,21 @@ It is probably best used for small databases and/or databases with small entries
 
 ## Public methods
 ### .read()
-Arguments `id` (string, required)
-Returns data corresponding to `id`, or False if there is no data
-Can be called without arguments on existing object if id has alredy been set.
+Arguments `id` (string, required)  
+Returns data corresponding to `id`, or False if there is no data  
+Can be called without arguments on existing object if id has alredy been set.  
 ### .write()
-Arguments `id` (string, required), `data` (string, required), `tll` (int, optional)
-Stores the supplied `data` to that `id`, `tll` can be set here if not already passed on invocation
-Returns the hashed `id` or False
-Will do `clean_expired`and `purge_rows` if they are set True
-Can be called without arguments on existing object if id and data has alredy been set.
+Arguments `id` (string, required), `data` (string, required), `tll` (int, optional)  
+Stores the supplied `data` to that `id`, `tll` can be set here if not already passed on invocation  
+Returns the hashed `id` or False  
+Will do `clean_expired`and `purge_rows` if they are set True  
+Can be called without arguments on existing object if id and data has alredy been set.  
 
 ### .delete()
-Arguments `id` (string, required)
-Deletes entry corresponding to that `id`
-Returns number of rows deletet, `1` or `0`.
-Can be called without arguments on existing object if id has alredy been set.
+Arguments `id` (string, required)  
+Deletes entry corresponding to that `id`  
+Returns number of rows deletet, `1` or `0`.  
+Can be called without arguments on existing object if id has alredy been set.  
 
 ## Performance
 
