@@ -11,10 +11,17 @@ Stores any data that can be parsed in to a string with `json.dumps()` and `json.
 Returns `int`, `dict` and `str` just fine, but returns a `list` if supplied a `tuple`
 
 ## Install
+From pip
 ```python
 python -m pip install dinkycache
-#or
-pip install dinkycache
+```
+
+From github
+```python
+# Copy the 'dinkycache' directory and 
+# requirements.txt into your cwd
+# Install dependencies:
+python -m pip install -r requirements.txt
 ```
 
 ## How to use
@@ -23,7 +30,7 @@ Import
 from dinkycache import Dinky
 ```
 
-Has 3 main methods called like so:
+3 main methods called like so:
 ```python
 Dinky().read(str: id)
 Dinky().write(str: id, str:data, float:ttl)
@@ -57,7 +64,7 @@ if results == False:
     results = fetch_data(id)
     Dinky().write(id, results)
 ```
-This is also an option, its there, fully supported, however not further documented:
+This is also an option, its there, its fully supported, however not further documented:
 ```python
     #Write:
     d = Dinky()
@@ -68,9 +75,10 @@ This is also an option, its there, fully supported, however not further document
     print(d.data)
 
     #Read:
-    d = Dinky(clean_expired = False)
+    d = Dinky()
     d.id = "test
-    print(results := d.read())
+    results = d.read()
+    print(results)
 ```
 
 In either case `results` will contain the data from cache if its there and within the specified TTL. Or it will call your get_some_data() to try and fetch the data instead.
@@ -118,7 +126,7 @@ Dinky(**settings).read(id)
 ## Examples of use with user-defined settings
 
 You can destruct a dict an pass it as settings each time you invoke `Dinky(**settings)`,
-or do the same, but assign the new `Dinky object` to a `variable` and reuse it that way:
+or assign the new `Dinky object` to a `variable` and re-use it that way:
 
 ### Invoke on every use:
 ```python
@@ -185,6 +193,28 @@ Arguments `id` (string, required)
 Deletes entry corresponding to that `id`  
 Returns number of rows deletet, `1` or `0`.  
 Can be called without arguments on existing object if id has alredy been set.  
+
+## Setting TTL to seconds, months etc:
+Its been a bit of a discussion whats the most sensible choice of default time unit for TTL, we landed on hours as a float.
+
+The idea is that hours will be sufficient and sensible enough in most usercases. However it also allows for a workaround if you need to set lower or higher values:
+
+```python
+    10 seconds:
+    Dinky().write(id = "1", data = "some data", ttl = 10 / 3600)
+    10 minutes:
+    Dinky().write(id = "1", data = "some data", ttl = 10 / 60)
+    10 months:
+    Dinky().write(id = "1", data = "some data", ttl = 10 * 720)
+    10 years:
+    Dinky().write(id = "1", data = "some data", ttl = 10 * 8760)
+```
+Alternatively you can expiry in seconds directly on the Dinky object like so 
+```python
+    d = Dinky()
+    d.expires = 10 + d.now
+    d.write(id = "1", data = "some data")
+```
 
 ## Performance
 

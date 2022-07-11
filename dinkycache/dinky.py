@@ -161,8 +161,8 @@ class Dinky:
         Args:
             ttl (float): Default 2160 hours
         """
-        self.ttl_millis = int(ttl * (60 * 60))
-        self.expires = self.ttl_millis + self.now if ttl else 0
+        self.ttl_sec = int(ttl * (60 * 60))
+        self.expires = self.ttl_sec + self.now if ttl else 0
     
     def _hash(self, id):
         """Returns hash of id"""
