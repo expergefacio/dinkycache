@@ -119,23 +119,11 @@ class Dinky:
         compressed = self.lz.compressToBase64(str_data)
 
         with self._SQLite(self.dbfile) as cur:
-            cached = cur.execute(
-                f"SELECT COUNT() FROM dinkycache WHERE id = '{hashed}'"
-            ).fetchone()[0]
-            if cached > 0:
-                cur.execute(
-                    f"UPDATE dinkycache "
-                    f"SET data = '{compressed}', "
-                    f"expiry = '{self.expires}', "
-                    f"created = '{self.now}' "
-                    f"WHERE id = '{hashed}'"
-                )
-            else:
-                cur.execute(
-                    f"INSERT INTO dinkycache "
-                    f"VALUES ('{hashed}', '{compressed}', "
-                    f"'{self.expires}', '{self.now}')"
-                )
+            cur.execute(
+                f"REPLACE INTO dinkycache "
+                f"VALUES ('{hashed}', '{compressed}', "
+                f"'{self.expires}', '{self.now}')"
+            )
         
         if self.purge_rows:
             self._purgerows()

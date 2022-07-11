@@ -26,6 +26,7 @@ def run():
     #read10k()
     #poop()
     #sql()
+    #generateTestSet()
     pass
 
 def sql():
@@ -94,7 +95,18 @@ def generate_word():
 
 def b():
     return bool(random.randint(0,1)) 
+
+def printToFile(output):
+    with open(".printed.txt", "a") as file_object:
+        file_object.write(output)
+        file_object.write('\n')
 #endregion
+
+def generateTestSet():
+    printToFile("INSERT INTO dinkycache")
+    printToFile("VALUES")
+    for i in range(2000000, 2000040):
+        printToFile(f"({i},{i},{i},{i}),")
 
 def generate100k():
     strt = time.perf_counter()

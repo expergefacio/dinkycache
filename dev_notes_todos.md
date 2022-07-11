@@ -1,19 +1,7 @@
 # changelog
 Intended for display in vscode, not as document 😅
 
-## Issues:
-.write return hash if id and data supplied, otherwise false
-is odd behaviour, return hash if data actually written, so can be used in conditional statement?
-
-
 ## Todo
-⏺ Look over code  
-⏺ Run more tests?  
-⏺ Make sure readme is on spot  
-⏺ Docstrings?
-        https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
-        Added some, but sparingly, imo honesty docstring and help() is a garbled mess
-        a thorough readme.md is a better option
 ⏺ Consider default options/settings  
 ⏺ Create package for Pypi 😁  
 ⏺ Really decide what to do with default ttl, thinking 0  
@@ -37,6 +25,10 @@ is odd behaviour, return hash if data actually written, so can be used in condit
         }
         ```
 
+✅ Look over code  
+✅ Change .write to 'INSERT OR REPLACE'  
+✅ Make sure readme is on spot  
+✅ Docstrings?
 ✅ Added delete()
         Used Expeption instead of TypeError, not sure if thats correct tho
         however we are checing if argument is supplied, not type of the argument supplied?
