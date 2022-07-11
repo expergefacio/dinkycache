@@ -10,15 +10,17 @@ Uses `sqlite` for storage and `lzstring` for compression.
 Stores any data that can be parsed in to a string with `json.dumps()` and `json.loads()`  
 Returns `int`, `dict` and `str` just fine, but returns a `list` if supplied a `tuple`
 
-## Dependencies
+## Install
 ```python
-pip install lzstring==1.0.4
+python -m pip install dinkycache
+#or
+pip install dinkycache
 ```
 
 ## How to use
-Download the dcache.py file to your project folder and import
+Import
 ```python
-from dinky import Dinky
+from dinkycache import Dinky
 ```
 
 Has 3 main methods called like so:
@@ -30,7 +32,7 @@ Dinky().delete(str: id) -> int
 
 ## Examples with default settings
 ```python
-from dcache import Dinky
+from dinkycache import Dinky
 
 #gets data from some slow source
 def fetch_data(id):

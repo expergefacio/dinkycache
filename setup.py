@@ -1,14 +1,24 @@
 from setuptools import setup
+import io
 
-VERSION = '0.9'
+"""
+python -m pip install twine
+python setup.py sdist bdist_wheel
+twine upload --skip-existing dist/*
+"""
+
+VERSION = '1.0.2'
 DESCRIPTION = 'Sqlite based cache for python projects'
+LONG_DESCRIPTION = io.open('README.md', encoding='utf8').read()
 
 setup(
   name='dinkycache',
-  version='1',
+  version=VERSION,
   description=DESCRIPTION,
+  long_description=LONG_DESCRIPTION,
+  long_description_content_type='text/markdown',
   author='eXpergefacio & Lanjelin',
-  author_email='any@expdvl.com',
+  author_email='dinky@dominic.no',
   packages=['dinkycache'],
   url='https://github.com/expergefacio/dinkycache',
   keywords=['dinkycache'],

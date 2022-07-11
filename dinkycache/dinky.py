@@ -6,7 +6,7 @@ from hashlib import sha256
 from lzstring import LZString
 
 # dinkycache
-# version 0.5
+# version 1.0.2
 
 class Dinky:
     def __init__(
