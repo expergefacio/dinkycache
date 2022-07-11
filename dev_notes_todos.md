@@ -44,6 +44,10 @@ Intended for display in vscode, not as document 😅
 ⏺ ~~Move garbage collection from init to write, to make read more faster?~~
         void for now, can be done on runtime by passing `clean_expired=False`
 
+
+##  1.0.3
+ttl now float for half hr like ttl = 0.5 or ttl = 30 / 60, or 30 seconds as ttl = 30 / 3600
+
 ## Moved to version nr 1.0.1 as uploaded to pypi
 
 ## From version 0.4 -> 0.5

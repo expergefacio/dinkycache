@@ -7,7 +7,7 @@ python setup.py sdist bdist_wheel
 twine upload --skip-existing dist/*
 """
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 DESCRIPTION = 'Sqlite based cache for python projects'
 LONG_DESCRIPTION = io.open('README.md', encoding='utf8').read()
 

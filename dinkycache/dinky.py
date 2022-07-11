@@ -6,13 +6,13 @@ from hashlib import sha256
 from lzstring import LZString
 
 # dinkycache
-# version 1.0.2
+# version 1.0.3
 
 class Dinky:
     def __init__(
             self, 
             dbfile: str = "dinkycache.db", 
-            ttl: int = 2160,
+            ttl: float = 2160,
             purge_rows: bool = True,
             row_limit: int = 10000,
             row_overflow: int = 1000,
@@ -28,7 +28,7 @@ class Dinky:
         Args:
             dbfile (str, optional):  The name (and path) of sqlite3 database.
                                      Defaults to 'dinkycache.db'
-            ttl (integer, optional): Time to live in hours
+            ttl (float, optional): Time to live in hours
                                      Defaults to 2160 hrs / 90 days
             purge_rows (bools, optional):    Clear overflowing rows if True
                                              Defaults True
@@ -95,19 +95,19 @@ class Dinky:
 
         return self.result
 
-    def write(self, id: str = False, data: str = False, ttl: int = False):
+    def write(self, id: str = False, data: str = False, ttl: float = False):
         """
         Writes a row to the database
         Args:
             id (str): The id to store the data under
             data (str): The value to store
-            ttl (int, optional): Time to live for the data, specified in hours.
+            ttl (float, optional): Time to live for the data, specified in hours.
                 Set to 0 for permanent storage. Defaults to 2160 hours / 90 days.
         Returns:
             Hash of the stored id, False otherwise.
         """
         self.result = False
-        if isinstance(ttl, int):
+        if isinstance(ttl, float):
             self.setTTL(ttl)
         if not self.id or not self.data:
             if not id or not data:
@@ -154,14 +154,14 @@ class Dinky:
             cur.execute(f"DELETE FROM dinkycache WHERE id = '{self.id}'")
             return cur.rowcount
     
-    def setTTL(self, ttl: int = 2160):
+    def setTTL(self, ttl: float = 2160):
         """
         Public method:
         Sets Time To Live in hours
         Args:
-            ttl (int): Default 2160 hours
+            ttl (float): Default 2160 hours
         """
-        self.ttl_millis = ttl * (60 * 60)
+        self.ttl_millis = int(ttl * (60 * 60))
         self.expires = self.ttl_millis + self.now if ttl else 0
     
     def _hash(self, id):

@@ -26,7 +26,7 @@ from dinkycache import Dinky
 Has 3 main methods called like so:
 ```python
 Dinky().read(str: id)
-Dinky().write(str: id, str:data, int:ttl)
+Dinky().write(str: id, str:data, float:ttl)
 Dinky().delete(str: id) -> int
 ```
 
@@ -80,7 +80,7 @@ In either case `results` will contain the data from cache if its there and withi
 Avaialble settings and default values
 ```python
     dbfile: str = "dinkycache.db",  # name of sqlite file
-    ttl: int = 2160,                # time to live in hours, default 2160 = 90 days, 0 = no expiry
+    ttl: float = 2160,              # time to live in hours, default 2160 = 90 days, 0 = no expiry
     purge_rows: bool = True,        # will enforce row_limit if true
     row_limit: int = 10000,         # maximum number of rows in db
     row_overflow: int = 1000,       # buffer zone above row_limit before anything is deleted
@@ -153,7 +153,7 @@ if (result := d.read(id) == False):
 If `clean_expired = True`, script will try to clean out expired entries every time data is **written** if one of the following conditions are met.  
 It has been minimum `clean_hrs: int = 24` hours since last cleanup  
 OR  
-There have been more than `clean_iterations: int = 100` invocations since last cleanup  
+There have been more than `clean_iterations: int = 100` calls since last cleanup  
 
 The cleanup function comes at a 75% performance cost, so if it runs on every 100 write, that amounts to a 7.5% average performance cost.
 
@@ -164,7 +164,7 @@ If `purge_rows = True`, script will try to clean out overflowing lines every tim
 `row_limit = int` sets the maximum lines in the database.  
 `row_overflow = int` how many lines over `row_limit` before `row_limit`is enforced
 
-This comes at a great performance cost for larger databases. 462 ms to sort 100k rows on a 1.8 ghz Intel Core i5. For this reason `row_overflow` is added as a threshold as a buffer, so that deletion dont happen on every call to `.write`.
+This comes at a great performance cost for larger databases. 462 ms to sort 100k rows on a 1.8 ghz Intel Core i5. For this reason `row_overflow` is added as a buffer threshold, so that deletion dont happen on every call to `.write`.
 
 It is probably best used for small databases and/or databases with small entries.
 
