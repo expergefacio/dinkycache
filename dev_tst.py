@@ -1,10 +1,13 @@
 from cgi import test
+from logging import exception
 from dinkycache import Dinky
 import random
 import json
+import ast
 import time
 import lzstring
 import urllib.request
+from hashlib import sha256
 
 
 print("  _       _   ")
@@ -27,6 +30,9 @@ def run():
     #poop()
     #sql()
     #generateTestSet()
+    #test_hash_vs_lz_speed()
+    #test_datatypes_and_string_onversion()
+    #test_try_or_ignore()
     pass
 
 def sql():
@@ -101,6 +107,142 @@ def printToFile(output):
         file_object.write(output)
         file_object.write('\n')
 #endregion
+
+def try_or_ignore(cb, *args, **kwargs):
+    try:
+        return cb(*args, **kwargs)
+    except BaseException as error:
+        print(f'An exception occurred: {error}')
+
+def throws(test):
+    if test:
+        return "Woohoo!"
+    else:
+        raise Exception("bad bad error!")
+
+def test_try_or_ignore():
+    print("test_try_or_ignore")
+    print("throws('none')")
+    print(try_or_ignore(throws, 'none'))
+    print()
+
+    print("throws(0)")
+    print(try_or_ignore(throws, 0))
+    print()
+
+    print("throws(1)")
+    print(try_or_ignore(throws, 1))
+
+
+def test_datatypes_and_string_onversion():
+    class objekt:
+        def __init__(self):
+            self.x = 5
+    datatypes = {
+        'int': 1,
+        'float': 1.0,
+        'bool': True,
+        'str': 'a',
+        'list': [1,2,3],
+        'tuple': (1,2,3),
+        'dict': {'a': 1, 'b': 2},
+        'set': {1,2,3},
+        'comprehensive_dict': {
+            'int': 1,
+            'float': 1.0,
+            'bool': True,
+            'str': 'a',
+            'list': [1,2,3],
+            'tuple': (1,2,3),
+            'dict': {'a': 1, 'b': 2},
+            'set': {1,2,3},
+        },
+        'object': objekt(),
+        'class': objekt,
+    }
+
+
+    print("python datatype -> string -> python datatype")
+    print()
+
+    for key, value in datatypes.items():
+        print()
+        print("=============================")
+        print(key)
+        print("=============================")
+        print()
+        print("type:".ljust(20), type(value).__name__)
+        print("no_change".ljust(20), repr(value))
+        python_str = str(value)
+        print("str()".ljust(20), repr(python_str))
+
+
+        print()
+        try:
+            #lit_eval_list = [python_str]
+            #lit_eval_wraper = str(lit_eval_list)
+            lit_eval = ast.literal_eval(python_str)
+            print("ast.literal_eval()".ljust(20), repr(lit_eval))
+            print("literal_eval() type:".ljust(20), type(lit_eval).__name__)
+
+        except BaseException as e:
+            print()
+            print("== lit_eval errors ==")
+            print(e)
+
+
+        print()
+        try:
+            d_eval = eval(python_str)
+            print("eval()".ljust(20), repr(d_eval))
+            print("eval() type:".ljust(20), type(d_eval).__name__)
+
+        except BaseException as e:
+            print("== eval errors ==")
+            print(e)
+
+
+        print()
+        try:
+            json_str = json.dumps(value)
+            print("json.dumps".ljust(20), repr(json_str))
+
+            json_loads = json.loads(json_str)
+            print("json.loads()".ljust(20), repr(json_loads))
+            print("json.loads() type:".ljust(20), type(json_loads).__name__)
+        except BaseException as e:
+            print("== Json errors ==")
+            print(e)
+
+
+
+
+def test_hash_vs_lz_speed(iterations = 10000):
+    lz = lzstring.LZString()
+    h = 0
+    l = 0
+    for i in range(0, iterations):
+        v = generate_sentence()
+
+        h1 = time.perf_counter()
+        sha256(v.encode("utf-8")).hexdigest()
+        h2 = time.perf_counter()
+        h = h + (h2 - h1)
+
+        l1 = time.perf_counter()
+        lz.compressToBase64(v)
+        l2 = time.perf_counter()
+        l = l + (l2 - l1)
+    
+    h = h / iterations
+    l = l / iterations
+
+    print(f"{h:.15f}", " hash")
+    print(f"{l:.15f}", " lzstring")
+
+    
+
+
 
 def generateTestSet():
     printToFile("INSERT INTO dinkycache")
